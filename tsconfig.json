@@ -1,0 +1,33 @@
+{
+  "exclude": ["node_modules", "**/*.test.ts", "**/*.spec.ts"],
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "outDir": "./dist/",
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "allowJs": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "importHelpers": true
+  },
+  "ts-node": {
+    "exclude": ["node_modules", "**/*.test.ts", "**/*.spec.ts"],
+    "compilerOptions": {
+      "lib": ["ES2022"],
+      "resolveJsonModule": true,
+      "esModuleInterop": true,
+      "noImplicitAny": true,
+      "module": "commonjs",
+      "target": "ES2022",
+      "allowJs": true,
+      "moduleResolution": "node",
+      "allowSyntheticDefaultImports": true,
+      "sourceMap": true,
+      "importHelpers": true
+    }
+  }
+}
