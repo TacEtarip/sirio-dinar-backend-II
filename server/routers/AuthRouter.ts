@@ -1,3 +1,4 @@
+import { authController } from '../controllers';
 import { authPaths } from '../models/constants/pathts';
 import { ISirioRouter } from '../models/interfaces/ISirioRouter';
 import SirioRouter from './SirioRouter';
@@ -13,9 +14,14 @@ class AuthRouter extends SirioRouter implements ISirioRouter {
       res.send('Welcome to Auth Router!');
     });
 
-    this.router.post(authPaths.API_PATH_LOGIN, (req, res) => {
-      res.send('Welcome to Auth Router!');
-    });
+    const controller = authController();
+
+    this.router.post(authPaths.API_PATH_LOGIN, controller.login);
+
+    this.router.patch(
+      authPaths.API_PATH_CHANGE_PASSWORD,
+      controller.changePassword,
+    );
   }
 }
 
