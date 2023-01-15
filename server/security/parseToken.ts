@@ -1,10 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import Configuration from '../../config';
+import { IContentResponse } from '../models/interfaces';
 
 const config = Configuration.instance;
 
-export const parseToken = (req: Request, res: Response, next: NextFunction) => {
+export const parseToken = (
+  req: Request,
+  res: IContentResponse,
+  next: NextFunction,
+) => {
   if (
     req.headers &&
     req.headers.authorization &&
@@ -15,7 +20,7 @@ export const parseToken = (req: Request, res: Response, next: NextFunction) => {
 
     jwt.verify(token, config.jwtSecret, (err, decoded) => {
       if (err) {
-        return res.status(401).send({ message: 'Unauthorized' });
+        return res.status(401).content({ message: 'Unauthorized' });
       }
       res.locals.user = decoded;
       return next();

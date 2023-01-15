@@ -2,7 +2,6 @@ import { authController } from '../controllers';
 import { authPaths } from '../models/constants/pathts';
 import { ISirioRouter } from '../models/interfaces/ISirioRouter';
 import SirioRouter from './SirioRouter';
-import UserRouter from './UserRouter';
 
 class AuthRouter extends SirioRouter implements ISirioRouter {
   constructor() {
@@ -18,8 +17,6 @@ class AuthRouter extends SirioRouter implements ISirioRouter {
     const controller = authController();
 
     this.router.post(authPaths.API_PATH_LOGIN, controller.login);
-
-    this.router.use('/user', new UserRouter().router);
   }
 }
 

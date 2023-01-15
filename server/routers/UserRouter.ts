@@ -1,6 +1,7 @@
 import { userController } from '../controllers';
 import { userPaths } from '../models/constants/pathts';
 import { ISirioRouter } from '../models/interfaces/ISirioRouter';
+import { loginChecks } from '../security';
 import SirioRouter from './SirioRouter';
 
 class UserRouter extends SirioRouter implements ISirioRouter {
@@ -24,6 +25,12 @@ class UserRouter extends SirioRouter implements ISirioRouter {
     this.router.get(
       userPaths.API_PATH_GET_USER_BY_USERNAME,
       controller.getUserByUsername,
+    );
+
+    this.router.get(
+      userPaths.API_PATH_GET_LOGGED_USER,
+      loginChecks.loginRequired,
+      controller.getLoggedUser,
     );
   }
 }

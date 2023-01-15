@@ -79,7 +79,29 @@ const userController = () => {
     }
   };
 
-  return { changePassword, getUserByUsername };
+  const getLoggedUser = async (req: Request, res: IContentResponse) => {
+    try {
+      if (!res.locals.user) {
+        return res.status(HTTP_STATUS.HTTP_UNAUTHORIZED).content({
+          message: 'Could not get the logged user. User not logged in!',
+        });
+      }
+      const username = res.locals.user.aud.split(' ')[0];
+      const user = await User.findOne({
+        username,
+      });
+
+      user.hashPassword = undefined;
+
+      res.status(HTTP_STATUS.HTTP_OK).content(user.toJSON());
+    } catch (error) {
+      return res
+        .status(HTTP_STATUS.HTTP_SERVER_ERROR)
+        .content({ message: 'Could not get the logged user. Server error!!' });
+    }
+  };
+
+  return { changePassword, getUserByUsername, getLoggedUser };
 };
 
 export default userController;

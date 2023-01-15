@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import http from 'http';
 import { IContentResponse } from './models/interfaces';
 import { mongoConnection } from './mongo';
-import { AuthRouter, InventoryRouter } from './routers';
+import { AuthRouter, InventoryRouter, UserRouter } from './routers';
 import { parseToken } from './security';
 
 const config = Configuration.instance;
@@ -43,6 +43,7 @@ const startServer = async (): Promise<[http.Server, Express.Application]> => {
 
   app.use('/api/inventory', new InventoryRouter().router);
   app.use('/api/auth', new AuthRouter().router);
+  app.use('/api/user', new UserRouter().router);
 
   const server = http.createServer(app);
 
