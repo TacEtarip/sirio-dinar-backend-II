@@ -1,19 +1,19 @@
 import bcrypt from 'bcrypt';
-import { NextFunction, Request, Response } from 'express';
+import { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import Configuration from '../../config';
-import setJsonRes from '../../lib/setJR';
 import * as HTTP_STATUS from '../models/constants/httpStatus';
-import { ILoginBody, IResponse } from '../models/interfaces';
+import { ILoginBody } from '../models/interfaces';
 import { mongoSchemas } from '../mongo';
+import { IContentResponse } from './../models/interfaces/IResponse';
 
 const User = mongoose.model('User', mongoSchemas.UserSchema);
 const config = Configuration.instance;
 const logger = config.logger;
 
 const authController = () => {
-  const login = async (req: Request, res: Response, next: NextFunction) => {
+  const login = async (req: Request, res: IContentResponse) => {
     try {
       const { username, password } = req.body as ILoginBody;
 
@@ -22,16 +22,12 @@ const authController = () => {
       });
 
       if (!user) {
-        const noUserResponse: IResponse<any> = {
-          status: HTTP_STATUS.HTTP_NOT_FOUND,
-          body: {
-            username: username.toLowerCase(),
-            success: false,
-            message: 'Authentication failed. User not found!',
-            token: null,
-          },
-        };
-        return setJsonRes(res, next, noUserResponse);
+        return res.status(HTTP_STATUS.HTTP_NOT_FOUND).content({
+          username: username.toLowerCase(),
+          success: false,
+          message: 'Authentication failed. User not found!',
+          token: null,
+        });
       }
 
       const isTheSamePassword = await bcrypt.compare(
@@ -40,48 +36,37 @@ const authController = () => {
       );
 
       if (!isTheSamePassword) {
-        const incorrectPasswordResponse: IResponse<any> = {
-          status: HTTP_STATUS.HTTP_UNAUTHORIZED,
-          body: {
-            username: req.body.username,
-            success: false,
-            message: 'Authentication failed. Wrong password!',
-            token: null,
-          },
-        };
-        return setJsonRes(res, next, incorrectPasswordResponse);
+        return res.status(HTTP_STATUS.HTTP_UNAUTHORIZED).content({
+          username: username.toLowerCase(),
+          success: false,
+          message: 'Authentication failed. Wrong password!',
+          token: null,
+        });
       }
-      const response: IResponse<any> = {
-        status: HTTP_STATUS.HTTP_ACCEPTED,
-        body: {
-          displayName: user.displayName,
-          username: user.username,
-          success: true,
-          message: "You're successfully logged in!",
-          type: user.type,
-          token: jwt.sign(
-            { aud: user.username + ' ' + user.type, _id: user.id },
-            config.jwtSecret,
-          ),
-        },
-      };
-      return setJsonRes(res, next, response);
+
+      return res.status(HTTP_STATUS.HTTP_ACCEPTED).content({
+        displayName: user.displayName,
+        username: user.username,
+        success: true,
+        message: "You're successfully logged in!",
+        type: user.type,
+        token: jwt.sign(
+          { aud: user.username + ' ' + user.type, _id: user.id },
+          config.jwtSecret,
+        ),
+      });
     } catch (error) {
       logger.error(error);
-      const serverErrorResponse: IResponse<any> = {
-        status: HTTP_STATUS.HTTP_SERVER_ERROR,
-        body: {
-          username: req.body.username,
-          success: false,
-          message: 'Authentication failed. Server error!',
-          token: null,
-        },
-      };
-      return setJsonRes(res, next, serverErrorResponse);
+
+      return res.status(HTTP_STATUS.HTTP_SERVER_ERROR).content({
+        username: req.body.username,
+        success: false,
+        message: 'Authentication failed. Server error!',
+        token: null,
+      });
     }
   };
 
   return { login };
 };
-
 export default authController;

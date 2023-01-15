@@ -4,8 +4,7 @@ import compression from 'compression';
 import express, { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import http from 'http';
-import setJsonRes from '../lib/setJR';
-import { IResponse } from './models/interfaces';
+import { IContentResponse } from './models/interfaces';
 import { mongoConnection } from './mongo';
 import { AuthRouter, InventoryRouter } from './routers';
 import { parseToken } from './security';
@@ -19,6 +18,10 @@ const startServer = async (): Promise<[http.Server, Express.Application]> => {
 
   const app = express();
 
+  (app.response as IContentResponse).content = function (body: any) {
+    return this.json({ content: body });
+  };
+
   app.set('port', config.port);
 
   app.use(helmet());
@@ -27,12 +30,13 @@ const startServer = async (): Promise<[http.Server, Express.Application]> => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  app.get('/', (req, res, next) => {
-    const response: IResponse<{ message: string }> = {
-      body: { message: 'Welcome to Inventory API!' },
-      status: 200,
-    };
-    return setJsonRes(res, next, response);
+  app.use('*', (req, res, next) => {
+    logger.info(`Request: ${req.method} ${req.baseUrl}`);
+    next();
+  });
+
+  app.get('/', (req, res: IContentResponse) => {
+    return res.content({ message: 'Welcome to Inventory API!' });
   });
 
   app.use(parseToken);
@@ -44,16 +48,6 @@ const startServer = async (): Promise<[http.Server, Express.Application]> => {
 
   server.listen(app.get('port'), () => {
     logger.info(`Server is running on http://localhost:${app.get('port')}`);
-  });
-
-  app.use('*', (req: Request, res: Response, next: NextFunction) => {
-    if (res.locals.response) {
-      const status = res.locals.response.status as number;
-      const body = res.locals.response.body;
-      delete res.locals.response;
-      return res.status(status).json({ content: { ...body } });
-    }
-    next();
   });
 
   app.use('*', (err: any, req: Request, res: Response, next: NextFunction) => {
